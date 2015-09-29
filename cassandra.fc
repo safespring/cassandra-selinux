@@ -1,0 +1,6 @@
+/usr/sbin/cassandra -- gen_context(system_u:object_r:cassandra_exec_t,s0)
+/var/log/cassandra(/.*) gen_context(system_u:object_r:cassandra_log_t,s0)
+/var/run/cassandra(/.*) gen_context(system_u:object_r:cassandra_var_run_t,s0)
+/var/lib/cassandra(/.*) gen_context(system_u:object_r:cassandra_db_t,s0)
+/etc/cassandra(/.*) gen_context(system_u:object_r:cassandra_conf_t,s0)
+
