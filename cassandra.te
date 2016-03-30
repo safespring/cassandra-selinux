@@ -10,6 +10,7 @@ type cassandra_exec_t;
 type cassandra_tmp_t;
 
 
+
 files_type(cassandra_db_t)
 files_type(cassandra_log_t)
 files_type(cassandra_conf_t)
@@ -21,45 +22,35 @@ logging_log_file(cassandra_log_t)
 files_pid_file(cassandra_var_run_t)
 
 init_daemon_domain(cassandra_t, cassandra_exec_t)
-
-require {
-	type afs3_callback_port_t;
-	type tmp_t;
-	type proc_net_t;
-	type proc_t;
-	type sysfs_t;
-}
+corecmd_exec_bin(cassandra_t)
 
 sysnet_dns_name_resolve(cassandra_t)
 dev_read_urand(cassandra_t)
 dev_read_rand(cassandra_t)
 auth_read_passwd(cassandra_t)
-kernel_read_net_sysctls(cassandra_t)
-# cassandra uses some already labeled ports.
-corenet_tcp_bind_generic_node(cassandra_t)
-corenet_tcp_connect_generic_port(cassandra_t)
-corenet_tcp_bind_unreserved_ports(cassandra_t)
 fs_getattr_xattr_fs(cassandra_t)
 
-# java  :(((
-corecmd_exec_bin(cassandra_t)
-allow cassandra_t self:process { execmem setsched };
+kernel_read_system_state(cassandra_t)
+kernel_read_network_state(cassandra_t)
+kernel_read_net_sysctls(cassandra_t)
+
+dev_list_sysfs(cassandra_t)
+corenet_tcp_bind_afs3_callback_port(cassandra_t)
+corenet_tcp_bind_generic_node(cassandra_t)
+corenet_tcp_connect_afs3_callback_port(cassandra_t)
+corenet_tcp_connect_generic_port(cassandra_t)
+corenet_tcp_bind_generic_port(cassandra_t)
+
 allow cassandra_t cassandra_conf_t:dir { getattr search };
 allow cassandra_t cassandra_conf_t:file { read getattr open };
 allow cassandra_t cassandra_conf_t:lnk_file { read getattr };
 allow cassandra_t cassandra_db_t:dir { search read create write getattr remove_name open add_name };
 allow cassandra_t cassandra_db_t:file { rename read create write getattr link unlink open append };
 allow cassandra_t cassandra_log_t:file { write open };
-allow cassandra_t self:tcp_socket { accept listen };
-allow cassandra_t afs3_callback_port_t:tcp_socket { name_bind name_connect };
 
-# type transistion for tmpfiles.
 allow cassandra_t cassandra_tmp_t:dir { search read create write getattr remove_name open add_name };
 allow cassandra_t cassandra_tmp_t:file { write execute read create unlink open getattr };
-allow cassandra_t tmp_t:dir { write remove_name add_name };
-type_transition cassandra_t tmp_t:file cassandra_tmp_t;
-type_transition cassandra_t tmp_t:dir cassandra_tmp_t;
+allow cassandra_t self:process { execmem setsched };
+allow cassandra_t self:tcp_socket { accept listen };
 
-allow cassandra_t proc_net_t:file { read getattr open };
-allow cassandra_t proc_t:file { getattr open ioctl };
-allow cassandra_t sysfs_t:dir read;
+files_tmp_filetrans(cassandra_t, cassandra_tmp_t, { file dir })
